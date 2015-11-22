@@ -1,0 +1,66 @@
+version: "1.0.0-a7";
+
+parameters: Parameters {
+    date: True;
+    project: "continuum";
+    maxStep: 1;
+};
+
+layers {
+    ContinuumLayer {
+        id: "solute";
+        boundary: Absorbing;
+    };
+    AgentLayer {
+        id: "agents";
+        boundary: Arena;
+    };
+};
+
+processes {
+    Tick;
+    Scatter { 
+        maxTargets: 1;
+        period: 0;
+        description: Agent {
+            name: "cell";
+            behaviors {
+                reproduce: 
+                    ExpandTo:
+                        target:
+                            VacantNeighbors;
+            };
+            reactions {
+                Reaction {
+                    inj: 0.01;
+                    layer: "solute";
+                };
+            };
+        };
+    };
+    Trigger {
+        behavior: "reproduce";
+    };
+    Hold: layer: "solute";
+    Diffuse {
+        layer: "solute";
+        constant: 0.01;
+    };
+    Release: layer: "solute";
+    Record;
+};
+
+output {
+    ProgressReporter;
+    CoordinateIndexer;
+    AgentNameWriter;
+    TimeWriter;
+    ContinuumStateWriter;
+    VisualizationSerializer {
+        visualization:
+            Map:
+                color:
+                    Continuum:
+                        id: "solute";
+    };
+};

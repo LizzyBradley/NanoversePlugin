@@ -1,0 +1,66 @@
+{
+  parserClass="com.nanoverseplugin.parser.NanoverseParser"
+
+  extends="com.intellij.extapi.psi.ASTWrapperPsiElement"
+
+  psiClassPrefix="Nanoverse"
+  psiImplClassSuffix="Impl"
+  psiPackage="com.nanoverseplugin.psi"
+  psiImplPackage="com.nanoverseplugin.psi.impl"
+
+  elementTypeHolderClass="com.nanoverseplugin.psi.NanoverseTypes"
+  elementTypeClass="com.nanoverseplugin.psi.NanoverseElementType"
+  tokenTypeClass="com.nanoverseplugin.psi.NanoverseTokenType"
+
+  tokens=[
+    colon=':'
+    semi=';'
+    Blank='regexp:\p{Blank}+'
+    Space='regexp:[\s\t\f]+'
+  ]
+}
+
+nanoverseFile ::= statement_*
+
+private primitiveStatement ::= primitive semi
+private idStatement ::= id semi
+private assignmentStatement ::= assignment semi
+
+assignment ::= id colon Space? singleton
+            | id block
+
+block ::= '{' (statement_)* '}'
+private singleton ::= assignment
+            | id
+            | primitive
+
+id ::= 'regexp:[a-zA-Z][a-zA-Z0-9]*'
+
+private primitive ::= stringPrimitive
+            | floatPrimitive
+            | intPrimitive
+            | boolPrimitive
+private stringPrimitive ::= string
+private floatPrimitive ::= float_
+private intPrimitive ::= integer
+private boolPrimitive ::= bool
+
+bool ::= 'True' | 'False'
+string ::= "regexp:('([^'\\]|\\.)*'|\"([^\"\\]|\\.)*\")"
+
+integer ::= '-'? int_
+private int_ ::= '0' | 'regexp:[1-9][0-9]*'
+
+float_ ::= '-'? int_ '.' (('0')+ | int_)+ exp? | '-'? int_ exp
+exp ::= 'regexp:[Ee][+/-]?[1-9][0-9]*'
+
+
+lineComment ::= 'regexp://.*'
+comment ::= 'regexp:/\*([^*]|[\r\n]|(\*+([^*/]|[\r\n])))*\*+/'
+
+private statement_ ::= Space
+            | lineComment
+            | comment
+            | assignmentStatement
+            | idStatement
+            | primitiveStatement
